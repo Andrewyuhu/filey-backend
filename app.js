@@ -1,11 +1,15 @@
 const express = require("express");
+const folderRouter = require("./routes/folderRouter");
+var methodOverride = require("method-override");
+const fildHandlerMiddleware = require("./middleware/fileHandlerMiddleware");
 
 const app = express();
 
-const fildHandlerMiddleware = require("./middleware/fileHandlerMiddleware");
-
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride("_method"));
+
+app.use("/", folderRouter);
 
 app.get("/", (req, res) => {
   res.render("index");

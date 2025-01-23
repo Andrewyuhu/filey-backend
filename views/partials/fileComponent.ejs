@@ -1,0 +1,10 @@
+<ul>
+  <% if (locals.childrenFolders) { %> <% childrenFolders.forEach(folder => { %>
+  <li>
+    <a href="/folder/<%= folder.id%>"><%= folder.folderName %></a>
+    <form action="/delete-folder/<%= folder.id%>?_method=DELETE" method="POST">
+      <button type="submit">Delete Folder</button>
+    </form>
+  </li>
+  <% }) %> <% } else { %> No Files <% }%>
+</ul>
