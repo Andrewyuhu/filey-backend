@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-
+const supabaseClient = require("../config/supabaseClient");
 const prisma = new PrismaClient();
 
 async function createFolder(req, res) {
@@ -59,9 +59,30 @@ async function deleteFolder(req, res) {
   }
 }
 
+// This function will interact with the supabase client and upload the user file
+async function uploadFile(req, res) {
+  const file = req.file.buffer;
+  const fileName = req.file.originalname;
+  const { data, error } = await supabaseClient.storage
+    .from("fileuploader")
+    .upload(`uploads/${fileName}`, file);
+
+  if (error) {
+    console.log(error);
+  }
+  res.redirect("/");
+}
+
+// This function will add the fileName and any needed identifying information to the files database
+async function addFile() {
+  return;
+}
+
 module.exports = {
   createFolder,
   getRootFolders,
   getSubFolders,
   deleteFolder,
+  uploadFile,
+  addFile,
 };
