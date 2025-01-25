@@ -6,8 +6,7 @@
     <title>Document</title>
   </head>
   <body>
-    <h1>Home Page</h1>
-
+    <h1>Home Page - <%=currentUser.username%></h1>
     <form action="/create-folder" method="post">
       <label for="newFolder">Create Folder</label>
       <input type="text" id="newFolder" name="newFolder" required />
@@ -15,5 +14,8 @@
     </form>
     <%- include("./partials/fileComponent") %> <%-
     include("./partials/fileInputForm", {actionUrl:"/submit-file"}) %>
+    <form action="/sign-out" method="post">
+      <button type="submit">Sign Out</button>
+    </form>
   </body>
 </html>

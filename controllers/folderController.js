@@ -11,6 +11,7 @@ async function createFolder(req, res) {
     data: {
       folderName: newFolder,
       folderId: folderId ? Number(folderId) : undefined,
+      ownerId: req.user.id,
     },
   });
   // Re-direct based on where folder was created
@@ -22,15 +23,16 @@ async function createFolder(req, res) {
 }
 
 // Renders home page
-async function getRootFolders(req, res, next) {
+async function getRootFolders(req, res) {
   const rootFolders = await prisma.folder.findMany({
     where: {
       parentFolder: null,
+      ownerId: req.user.id,
     },
   });
 
   // Sets res.locals.files to contain all folder files
-  await getFolderFiles(null, res);
+  await getFolderFiles(null, res, req.user.id);
   res.locals.childrenFolders = rootFolders;
   res.render("index");
 }
@@ -42,6 +44,7 @@ async function getSubFolders(req, res) {
   const parentFolder = await prisma.folder.findFirst({
     where: {
       id: parentFolderId,
+      ownerId: req.user.id,
     },
     include: {
       childrenFolder: true,
@@ -61,6 +64,7 @@ async function deleteFolder(req, res) {
   const deletedFolder = await prisma.folder.delete({
     where: {
       id: Number(folderId),
+      ownerId: req.user.id,
     },
     include: {
       file: true,
@@ -69,7 +73,7 @@ async function deleteFolder(req, res) {
   const fullFileUrls = deletedFolder.file.map((file) => {
     return file.url;
   });
-  await deleteFilesSupabase(fullFileUrls);
+  await deleteFilesSupabase(fullFileUrls, req.user.id);
   if (deletedFolder.folderId) {
     res.redirect(`/folder/${deletedFolder.folderId}`);
   } else {
@@ -84,7 +88,7 @@ async function uploadFile(req, res, next) {
 
   const { data, error } = await supabaseClient.storage
     .from("fileuploader")
-    .upload(`uploads/${fileName}`, file);
+    .upload(`${req.user.id}/${fileName}`, file);
 
   if (error) {
     throw new Error(error);
@@ -108,6 +112,7 @@ async function addFile(req, res, next) {
       fileSize: fileSize,
       fileType: fileType,
       folderId: folderId,
+      ownerId: req.user.id,
     },
   });
   next();
@@ -119,20 +124,21 @@ async function downloadFile(req, res) {
 }
 
 // Only used during rendering to get folder specific files
-async function getFolderFiles(folderId, res) {
+async function getFolderFiles(folderId, res, userId) {
   const files = await prisma.file.findMany({
     where: {
       folderId: folderId,
+      ownerId: userId,
     },
   });
   res.locals.files = files;
 }
 
 // Delete file(s) from Supabase
-async function deleteFilesSupabase(fileUrls) {
+async function deleteFilesSupabase(fileUrls, userId) {
   // Append the folder
   const fullFileUrls = fileUrls.map((url) => {
-    return `uploads/${url}`;
+    return `${userId}/${url}`;
   });
   console.log(fullFileUrls);
   const { data, error } = await supabaseClient.storage
@@ -152,9 +158,10 @@ async function deleteFile(req, res) {
   const deletedFile = await prisma.file.delete({
     where: {
       id: Number(fileId),
+      ownerId: req.user.id,
     },
   });
-  await deleteFilesSupabase([deletedFile.url]); // Removes files from Supabase
+  await deleteFilesSupabase([deletedFile.url], req.user.id); // Removes files from Supabase
   res.redirect("/");
 }
 
