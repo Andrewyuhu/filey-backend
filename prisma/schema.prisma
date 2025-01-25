@@ -19,4 +19,17 @@ model Folder {
   parentFolder   Folder?  @relation("SubFolders", fields: [folderId], references: [id], onDelete: Cascade)
   folderId       Int?
   childrenFolder Folder[] @relation("SubFolders")
+  file           File[]
+}
+
+model File {
+  id         Int      @id @default(autoincrement())
+  url        String
+  fileName   String
+  fileSize   Int
+  fileType   String
+  fileExt    String
+  uploadedAt DateTime @default(now())
+  folder     Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folderId   Int?
 }
