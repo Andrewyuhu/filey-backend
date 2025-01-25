@@ -7,6 +7,13 @@
   </head>
   <body>
     <h1>Home Page</h1>
+    <form action="/sign-up" method="post">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required />
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
+      <button type="submit">Sign Up</button>
+    </form>
     <form action="/create-folder" method="post">
       <label for="newFolder">Create Folder</label>
       <input type="text" id="newFolder" name="newFolder" required />
