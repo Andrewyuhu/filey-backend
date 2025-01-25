@@ -13,6 +13,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id       Int      @id @default(autoincrement())
+  username String
+  password String
+  folder   Folder[]
+  file     File[]
+}
+
 model Folder {
   id             Int      @id @default(autoincrement())
   folderName     String
@@ -20,6 +28,8 @@ model Folder {
   folderId       Int?
   childrenFolder Folder[] @relation("SubFolders")
   file           File[]
+  owner          User     @relation(fields: [ownerId], references: [id])
+  ownerId        Int
 }
 
 model File {
@@ -31,4 +41,6 @@ model File {
   uploadedAt DateTime @default(now())
   folder     Folder?  @relation(fields: [folderId], references: [id], onDelete: Cascade)
   folderId   Int?
+  owner      User     @relation(fields: [ownerId], references: [id])
+  ownerId    Int
 }
