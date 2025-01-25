@@ -9,5 +9,8 @@
   <% }) %> <% } else { %> No Files <% }%> <% if (locals.files) { %> <%
   files.forEach(file => { %>
   <li><%= file.fileName %></li>
+  <form action="/delete-file/<%= file.id %>?_method=DELETE" method="POST">
+    <button type="submit">Delete File</button>
+  </form>
   <% }) %> <% } else { %> No Files <% }%>
 </ul>

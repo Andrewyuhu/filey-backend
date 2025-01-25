@@ -55,14 +55,21 @@ async function getSubFolders(req, res) {
   res.render("subFolder");
 }
 
-// Cascading Delete
+// Deletes folder & files in the folder
 async function deleteFolder(req, res) {
   const { folderId } = req.params;
   const deletedFolder = await prisma.folder.delete({
     where: {
       id: Number(folderId),
     },
+    include: {
+      file: true,
+    },
   });
+  const fullFileUrls = deletedFolder.file.map((file) => {
+    return file.url;
+  });
+  await deleteFilesSupabase(fullFileUrls);
   if (deletedFolder.folderId) {
     res.redirect(`/folder/${deletedFolder.folderId}`);
   } else {
@@ -121,6 +128,36 @@ async function getFolderFiles(folderId, res) {
   res.locals.files = files;
 }
 
+// Delete file(s) from Supabase
+async function deleteFilesSupabase(fileUrls) {
+  // Append the folder
+  const fullFileUrls = fileUrls.map((url) => {
+    return `uploads/${url}`;
+  });
+  console.log(fullFileUrls);
+  const { data, error } = await supabaseClient.storage
+    .from("fileuploader")
+    .remove(fullFileUrls);
+
+  if (error) {
+    throw new Error(error);
+  }
+}
+
+// Delete button function will delete a single file
+async function deleteFile(req, res) {
+  const { fileId } = req.params;
+
+  // Deletes file from DB
+  const deletedFile = await prisma.file.delete({
+    where: {
+      id: Number(fileId),
+    },
+  });
+  await deleteFilesSupabase([deletedFile.url]); // Removes files from Supabase
+  res.redirect("/");
+}
+
 module.exports = {
   createFolder,
   getRootFolders,
@@ -129,4 +166,5 @@ module.exports = {
   uploadFile,
   addFile,
   downloadFile,
+  deleteFile,
 };
