@@ -2,6 +2,7 @@ const express = require("express");
 const folderRouter = require("./routes/folderRouter");
 const methodOverride = require("method-override");
 const fildHandlerMiddleware = require("./middleware/fileHandlerMiddleware");
+const { multerErrorHandler } = require("./middleware/errorMiddleware");
 const { uploadFile } = require("./controllers/folderController");
 
 const app = express();
@@ -19,7 +20,10 @@ app.get("/", (req, res) => {
 app.post(
   "/submit-file",
   fildHandlerMiddleware.single("uploaded_file"),
-  uploadFile
+  multerErrorHandler,
+  (req, res) => {
+    res.redirect("/");
+  }
 );
 
 app.listen(3000, (req, res) => {

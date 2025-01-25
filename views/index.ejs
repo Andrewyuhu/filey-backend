@@ -12,6 +12,9 @@
       <input type="file" id="uploaded_file" name="uploaded_file" />
       <button type="submit">Submit</button>
     </form>
+    <% if (locals.fileUploadErrorMessage) { %> <%-
+    include("./partials/fileUploadErrorComponent") %> <%}%>
+
     <form action="/create-folder" method="post">
       <label for="newFolder">Create Folder</label>
       <input type="text" id="newFolder" name="newFolder" />
