@@ -1,7 +1,5 @@
 const { genPassword } = require("../util/passwordUtil");
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../config/prisma");
 
 async function signUp(req, res) {
   const { username, password } = req.body;
@@ -16,4 +14,8 @@ async function signUp(req, res) {
   res.redirect("/");
 }
 
-module.exports = { signUp };
+function getSignUp(req, res) {
+  res.render("signUp");
+}
+
+module.exports = { signUp, getSignUp };

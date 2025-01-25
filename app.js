@@ -8,6 +8,8 @@ const { uploadFile, addFile } = require("./controllers/folderController");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const { PrismaClient } = require("@prisma/client");
 const expressSession = require("express-session");
+const passport = require("./config/passport");
+const authRouter = require("./routes/authRouter");
 const app = express();
 
 require("dotenv").config();
@@ -30,7 +32,9 @@ app.use(
     }),
   })
 );
+app.use(passport.session());
 
+app.use("/", authRouter);
 app.use("/", signUpRouter);
 app.use("/", folderRouter);
 

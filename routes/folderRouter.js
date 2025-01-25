@@ -1,7 +1,10 @@
 const { Router } = require("express");
 const folderController = require("../controllers/folderController");
-
+const { isUserAuthenticated } = require("../middleware/authMiddleware");
 const folderRouter = Router();
+
+// Auth Middleware to prevent unauthorized access
+folderRouter.use(isUserAuthenticated);
 
 folderRouter.get("/", folderController.getRootFolders);
 folderRouter.get("/folder/:folderId", folderController.getSubFolders);
