@@ -24,7 +24,12 @@ app.post(
   uploadFile,
   addFile,
   (req, res) => {
-    res.redirect("/");
+    const { folderId } = req.body;
+    if (folderId) {
+      res.redirect(`/folder/${folderId}`);
+    } else {
+      res.redirect("/");
+    }
   }
 );
 

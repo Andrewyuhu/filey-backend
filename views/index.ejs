@@ -7,19 +7,12 @@
   </head>
   <body>
     <h1>Home Page</h1>
-    <form action="/submit-file" method="post" enctype="multipart/form-data">
-      <label for="uploaded_file">File Upload</label>
-      <input type="file" id="uploaded_file" name="uploaded_file" />
-      <button type="submit">Submit</button>
-    </form>
-    <% if (locals.fileUploadErrorMessage) { %> <%-
-    include("./partials/fileUploadErrorComponent") %> <%}%>
-
     <form action="/create-folder" method="post">
       <label for="newFolder">Create Folder</label>
       <input type="text" id="newFolder" name="newFolder" />
       <button type="submit">Submit</button>
     </form>
-    <%- include("./partials/fileComponent") %>
+    <%- include("./partials/fileComponent") %> <%-
+    include("./partials/fileInputForm", {actionUrl:"/submit-file"}) %>
   </body>
 </html>

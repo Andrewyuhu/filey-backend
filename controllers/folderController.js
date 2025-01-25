@@ -1,6 +1,8 @@
 const { PrismaClient } = require("@prisma/client");
 const path = require("path");
 const supabaseClient = require("../config/supabaseClient");
+const extractFileInformation = require("../util/extractFileInformation");
+const { v4: uuidv4 } = require("uuid");
 const prisma = new PrismaClient();
 
 async function createFolder(req, res) {
@@ -19,16 +21,21 @@ async function createFolder(req, res) {
   }
 }
 
+// Renders home page
 async function getRootFolders(req, res, next) {
   const rootFolders = await prisma.folder.findMany({
     where: {
       parentFolder: null,
     },
   });
+
+  // Sets res.locals.files to contain all folder files
+  await getFolderFiles(null, res);
   res.locals.childrenFolders = rootFolders;
   res.render("index");
 }
 
+// Renders sub folder page
 async function getSubFolders(req, res) {
   const { folderId } = req.params;
   const parentFolderId = Number(folderId);
@@ -40,6 +47,9 @@ async function getSubFolders(req, res) {
       childrenFolder: true,
     },
   });
+
+  // Sets res.locals.files to contain all folder files
+  await getFolderFiles(parentFolderId, res);
   res.locals.folder = parentFolder; //  Sets parent folder data
   res.locals.childrenFolders = parentFolder.childrenFolder; // Sets children folder of parent
   res.render("subFolder");
@@ -62,15 +72,15 @@ async function deleteFolder(req, res) {
 
 // This function will interact with the supabase client and upload the user file
 async function uploadFile(req, res, next) {
-  const file = req.file.buffer;
-  const fileName = req.file.originalname;
+  const file = req.file.buffer; // file to be uploaded
+  const fileName = uuidv4() + path.extname(req.file.originalname); // create unique name
+
   const { data, error } = await supabaseClient.storage
     .from("fileuploader")
     .upload(`uploads/${fileName}`, file);
 
-  // todo : add proper error handling here, can just use global error handler for this project
   if (error) {
-    res.redirect("/");
+    throw new Error(error);
   }
   req.body.uploadData = data;
   next();
@@ -78,14 +88,37 @@ async function uploadFile(req, res, next) {
 
 // This function will add the fileName and any needed identifying information to the files database
 async function addFile(req, res, next) {
-  // todo : figure out how to properly create a file within a sub folder that is not root
-  // const parentFolder = ""
+  // Defines file folder ID, if not sent, then default to ROOT folder
+  const folderId = req.body.folderId ? Number(req.body.folderId) : undefined;
+  const { url, fileName, fileSize, fileType } = extractFileInformation(
+    req.file,
+    req.body.uploadData
+  );
+  await prisma.file.create({
+    data: {
+      url: url,
+      fileName: fileName,
+      fileSize: fileSize,
+      fileType: fileType,
+      folderId: folderId,
+    },
+  });
   next();
 }
 
 async function downloadFile(req, res) {
   // Needs to the file name and extension
   return;
+}
+
+// Only used during rendering to get folder specific files
+async function getFolderFiles(folderId, res) {
+  const files = await prisma.file.findMany({
+    where: {
+      folderId: folderId,
+    },
+  });
+  res.locals.files = files;
 }
 
 module.exports = {

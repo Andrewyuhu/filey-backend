@@ -1,0 +1,7 @@
+<form action="<%= actionUrl %>" method="post" enctype="multipart/form-data">
+  <label for="uploaded_file">File Upload</label>
+  <input type="file" id="uploaded_file" name="uploaded_file" required />
+  <input type="hidden" name="folderId" value="<%= locals.folder ? folder.id :
+  "root" %>" />
+  <button type="submit">Submit</button>
+</form>
