@@ -1,6 +1,6 @@
 const { Router } = require("express");
 const folderController = require("../controllers/folderController");
-const { isUserAuthenticated } = require("../middleware/authMiddleware");
+const isUserAuthenticated = require("../middleware/authMiddleware");
 const folderRouter = Router();
 
 // Auth Middleware to prevent unauthorized access

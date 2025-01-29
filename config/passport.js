@@ -1,46 +1,40 @@
 const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
+const jwtStrategy = require("passport-jwt").Strategy;
 const prisma = require("../config/prisma");
 const { validatePassword } = require("../util/passwordUtil");
+const { ExtractJwt } = require("passport-jwt");
+
+require("dotenv").config();
+
+// Using Cookies to store the jwt
+const cookieExtractor = function (req) {
+  const token = null;
+  if (req && req.cookies) {
+    token = req.cookies["JWT"];
+  }
+  return token;
+};
+
+const opts = {};
+opts.jwtFromRequest = cookieExtractor;
+opts.secretOrKey = process.env.JWT_SECRET;
 
 passport.use(
-  new LocalStrategy(async (username, password, done) => {
+  new jwtStrategy(opts, async (jwt_payload, done) => {
     try {
       const user = await prisma.user.findFirst({
         where: {
-          username: username,
+          id: jwt_payload.id,
         },
       });
-      if (!user) {
-        return done(null, false, { message: "Incorrect username" });
+      if (user) {
+        return done(null, user);
       }
-      const validPassword = validatePassword(password, user.password);
-      if (!validPassword) {
-        return done(null, false, { message: "Incorrect password" });
-      }
-      console.log("succesful login");
-      return done(null, user);
+      return done(err, false);
     } catch (err) {
-      return done(err);
+      return done(err, false);
     }
   })
 );
-
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
-
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await prisma.user.findFirst({
-      where: {
-        id: id,
-      },
-    });
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
 
 module.exports = passport;

@@ -7,8 +7,7 @@ const { multerErrorHandler } = require("./middleware/errorMiddleware");
 const { uploadFile, addFile } = require("./controllers/folderController");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const { PrismaClient } = require("@prisma/client");
-const expressSession = require("express-session");
-const passport = require("./config/passport");
+const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authRouter");
 const app = express();
 
@@ -17,30 +16,10 @@ require("dotenv").config();
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.use(
-  expressSession({
-    cookie: {
-      maxAge: 7 * 24 * 60 * 60 * 1000, // ms
-    },
-    secret: process.env.SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
-    store: new PrismaSessionStore(new PrismaClient(), {
-      checkPeriod: 2 * 60 * 1000, //ms
-      dbRecordIdIsSessionId: true,
-      dbRecordIdFunction: undefined,
-    }),
-  })
-);
-app.use(passport.session());
-
+app.use(cookieParser());
 app.use("/", authRouter);
 app.use("/", signUpRouter);
 app.use("/", folderRouter);
-
-app.get("/", (req, res) => {
-  res.render("index");
-});
 
 app.post(
   "/submit-file",
