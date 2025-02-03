@@ -16,4 +16,26 @@ async function createUser(username, password) {
   }
 }
 
-module.exports = { createUser };
+async function findUserById(id) {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
+
+  if (!user) throw new AppError("User not found", 404);
+  return user;
+}
+
+async function findUserByUsername(username) {
+  const user = await prisma.user.findUnique({
+    where: {
+      username: username,
+    },
+  });
+
+  if (!user) throw new AppError("User not found", 404);
+  return user;
+}
+
+module.exports = { createUser, findUserById, findUserByUsername };
