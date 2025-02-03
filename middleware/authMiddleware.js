@@ -1,24 +1,21 @@
 const jwt = require("jsonwebtoken");
+const AppError = require("../error/AppError");
 require("dotenv").config();
 
 function isUserAuthenticated(req, res, next) {
-  const token = req.cookies.JWT;
+  const token = req.cookies.jwt;
 
   if (!token) {
-    return res.redirect("/sign-in");
+    throw new AppError("No jwt token found", 401);
   }
 
   jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
     if (err) {
-      return res.status(403).json({ message: "Forbidden: Invalid token" });
+      throw new AppError("Forbidden: Invalid token", 403);
     }
-
     const decodedUser = { username: decoded.username, id: decoded.userId };
-
-    req.user = decodedUser; // Store user info from the token
-    console.log(req.user);
-    res.locals.currentUser = decodedUser;
-    next(); // Pass request to next middleware or route handler
+    req.user = decodedUser;
+    next();
   });
 }
 

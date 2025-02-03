@@ -1,11 +1,9 @@
-const passport = require("../config/passport");
-require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const { validatePassword } = require("../util/passwordUtil");
-const prisma = require("../config/prisma");
 const asyncHandler = require("express-async-handler");
 const AppError = require("../error/AppError");
 const { findUserByUsername } = require("../db/db");
+require("dotenv").config();
 
 // todo : to be removed
 function getSignIn(req, res) {
