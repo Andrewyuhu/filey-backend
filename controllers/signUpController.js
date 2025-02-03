@@ -1,18 +1,24 @@
 const { genPassword } = require("../util/passwordUtil");
-const prisma = require("../config/prisma");
+const asyncHandler = require("express-async-handler");
 
-async function signUp(req, res) {
+const signUp = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
+
+  if (!username || !password) {
+    res.status(400).json({ error: "missing password or username" });
+  }
+
   const hashedPassword = await genPassword(password);
-  const createdUser = await prisma.user.create({
+
+  await prisma.user.create({
     data: {
       username: username,
       password: hashedPassword,
     },
   });
-  console.log(createdUser);
-  res.redirect("/");
-}
+
+  return res.status(201).json({ username: username });
+});
 
 function getSignUp(req, res) {
   res.render("signUp");

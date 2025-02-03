@@ -5,18 +5,19 @@ const methodOverride = require("method-override");
 const fildHandlerMiddleware = require("./middleware/fileHandlerMiddleware");
 const { multerErrorHandler } = require("./middleware/errorMiddleware");
 const { uploadFile, addFile } = require("./controllers/folderController");
-const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
-const { PrismaClient } = require("@prisma/client");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authRouter");
+const cors = require("cors");
 const app = express();
 
 require("dotenv").config();
 
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(methodOverride("_method"));
 app.use(cookieParser());
+app.use(cors());
 app.use("/", authRouter);
 app.use("/", signUpRouter);
 app.use("/", folderRouter);
@@ -36,6 +37,11 @@ app.post(
     }
   }
 );
+
+app.use((err, req, res, next) => {
+  console.error(err);
+  return res.status(500).send(err);
+});
 
 app.listen(3000, (req, res) => {
   console.log("Server is running...");

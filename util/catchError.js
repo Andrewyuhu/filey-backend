@@ -1,0 +1,1 @@
+async function catchError(func) {}
