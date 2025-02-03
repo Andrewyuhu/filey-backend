@@ -2,6 +2,7 @@ const express = require("express");
 const folderRouter = require("./routes/folderRouter");
 const signUpRouter = require("./routes/signUpRouter");
 const methodOverride = require("method-override");
+const AppError = require("./error/AppError");
 const fildHandlerMiddleware = require("./middleware/fileHandlerMiddleware");
 const { multerErrorHandler } = require("./middleware/errorMiddleware");
 const { uploadFile, addFile } = require("./controllers/folderController");
@@ -39,7 +40,9 @@ app.post(
 );
 
 app.use((err, req, res, next) => {
-  console.error(err);
+  if (err instanceof AppError) {
+    return res.status(err.code).json({ error: err.message });
+  }
   return res.status(500).send(err);
 });
 

@@ -11,7 +11,7 @@ async function createUser(username, password) {
     });
     return newUser;
   } catch (err) {
-    if (err.code == "P2002") throw new AppError(409, "Duplicate username");
+    if (err.code == "P2002") throw new AppError("Duplicate username", 409);
     throw err;
   }
 }

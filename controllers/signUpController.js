@@ -1,5 +1,6 @@
 const { genPassword } = require("../util/passwordUtil");
 const asyncHandler = require("express-async-handler");
+const db = require("../db/db");
 
 const signUp = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
@@ -10,12 +11,7 @@ const signUp = asyncHandler(async (req, res) => {
 
   const hashedPassword = await genPassword(password);
 
-  await prisma.user.create({
-    data: {
-      username: username,
-      password: hashedPassword,
-    },
-  });
+  await db.createUser(username, hashedPassword);
 
   return res.status(201).json({ username: username });
 });
