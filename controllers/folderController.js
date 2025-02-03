@@ -4,25 +4,20 @@ const supabaseClient = require("../config/supabaseClient");
 const extractFileInformation = require("../util/extractFileInformation");
 const { v4: uuidv4 } = require("uuid");
 const prisma = new PrismaClient();
+const asyncHandler = require("express-async-handler");
+const { getFolderContent, createFolder } = require("../db/db");
+const AppError = require("../error/AppError");
 
-async function createFolder(req, res) {
+const addFolder = asyncHandler(async (req, res) => {
   const { newFolder, folderId } = req.body;
-  await prisma.folder.create({
-    data: {
-      folderName: newFolder,
-      folderId: folderId ? Number(folderId) : undefined,
-      ownerId: req.user.id,
-    },
-  });
-  // Re-direct based on where folder was created
-  if (folderId) {
-    res.redirect(`/folder/${folderId}`);
-  } else {
-    res.redirect("/");
+  if (!newFolder) {
+    throw new AppError("Invalid input", 400);
   }
-}
+  const folder = await createFolder(newFolder, req.user.id, folderId);
+  return res.status(200).json(folder);
+});
 
-// Renders home page
+// todo : remove
 async function getRootFolders(req, res) {
   const rootFolders = await prisma.folder.findMany({
     where: {
@@ -37,26 +32,19 @@ async function getRootFolders(req, res) {
   res.render("index");
 }
 
-// Renders sub folder page
-async function getSubFolders(req, res) {
+// completed
+const getSubFolders = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
-  const parentFolderId = Number(folderId);
-  const parentFolder = await prisma.folder.findFirst({
-    where: {
-      id: parentFolderId,
-      ownerId: req.user.id,
-    },
-    include: {
-      childrenFolder: true,
-    },
-  });
 
-  // Sets res.locals.files to contain all folder files
-  await getFolderFiles(parentFolderId, res);
-  res.locals.folder = parentFolder; //  Sets parent folder data
-  res.locals.childrenFolders = parentFolder.childrenFolder; // Sets children folder of parent
-  res.render("subFolder");
-}
+  if (isNaN(folderId) || !folderId || folderId < 0) {
+    throw new AppError("Invalid folder ID", 400);
+  }
+
+  const parentFolderId = Number(folderId, req.user.id);
+  const folderContent = await getFolderContent(parentFolderId);
+
+  return res.status(200).json(folderContent);
+});
 
 // Deletes folder & files in the folder
 async function deleteFolder(req, res) {
@@ -166,7 +154,7 @@ async function deleteFile(req, res) {
 }
 
 module.exports = {
-  createFolder,
+  addFolder,
   getRootFolders,
   getSubFolders,
   deleteFolder,

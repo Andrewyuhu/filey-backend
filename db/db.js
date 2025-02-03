@@ -38,4 +38,46 @@ async function findUserByUsername(username) {
   return user;
 }
 
-module.exports = { createUser, findUserById, findUserByUsername };
+async function getFolderContent(folderId, userId) {
+  const folder = await prisma.folder.findFirst({
+    where: {
+      id: folderId,
+      ownerId: userId,
+    },
+    include: {
+      childrenFolder: true,
+    },
+  });
+
+  if (!folder) {
+    throw new AppError("Folder not found", 404);
+  }
+
+  const files = await prisma.file.findMany({
+    where: {
+      folderId: folderId,
+      ownerId: userId,
+    },
+  });
+
+  return { files: files, folders: folder.childrenFolder };
+}
+
+async function createFolder(folderName, userId, parentId = undefined) {
+  await prisma.folder.create({
+    data: {
+      folderName: folderName,
+      folderId: parentId,
+      ownerId: userId,
+    },
+  });
+  return { folderName: folderName, ownerId: userId };
+}
+
+module.exports = {
+  createUser,
+  findUserById,
+  findUserByUsername,
+  getFolderContent,
+  createFolder,
+};
