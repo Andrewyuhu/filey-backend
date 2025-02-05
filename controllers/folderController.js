@@ -5,7 +5,7 @@ const extractFileInformation = require("../util/extractFileInformation");
 const { v4: uuidv4 } = require("uuid");
 const prisma = new PrismaClient();
 const asyncHandler = require("express-async-handler");
-const { getFolderContent, createFolder } = require("../db/db");
+const { getFolderContent, createFolder, deleteFolderDB } = require("../db/db");
 const AppError = require("../error/AppError");
 
 const addFolder = asyncHandler(async (req, res) => {
@@ -40,34 +40,31 @@ const getSubFolders = asyncHandler(async (req, res) => {
     throw new AppError("Invalid folder ID", 400);
   }
 
-  const parentFolderId = Number(folderId, req.user.id);
-  const folderContent = await getFolderContent(parentFolderId);
+  const parentFolderId = Number(folderId);
+  const folderContent = await getFolderContent(parentFolderId, req.user.id);
 
   return res.status(200).json(folderContent);
 });
 
-// Deletes folder & files in the folder
-async function deleteFolder(req, res) {
+const deleteFolder = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
-  const deletedFolder = await prisma.folder.delete({
-    where: {
-      id: Number(folderId),
-      ownerId: req.user.id,
-    },
-    include: {
-      file: true,
-    },
-  });
+
+  if (isNaN(folderId)) {
+    throw new AppError("Invalid folder ID", 400);
+  }
+
+  const deletedFolder = await deleteFolderDB(folderId, req.user.id);
+
   const fullFileUrls = deletedFolder.file.map((file) => {
     return file.url;
   });
-  await deleteFilesSupabase(fullFileUrls, req.user.id);
-  if (deletedFolder.folderId) {
-    res.redirect(`/folder/${deletedFolder.folderId}`);
-  } else {
-    res.redirect("/");
+
+  if (fullFileUrls.length != 0) {
+    await deleteFilesSupabase(fullFileUrls, req.user.id);
   }
-}
+
+  return res.status(200).json(deletedFolder);
+});
 
 // This function will interact with the supabase client and upload the user file
 async function uploadFile(req, res, next) {
