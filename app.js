@@ -9,6 +9,7 @@ const { uploadFile, addFile } = require("./controllers/folderController");
 const cookieParser = require("cookie-parser");
 const authRouter = require("./routes/authRouter");
 const cors = require("cors");
+const fileRouter = require("./routes/fileRouter");
 const app = express();
 
 require("dotenv").config();
@@ -22,22 +23,18 @@ app.use(cors());
 app.use("/", authRouter);
 app.use("/", signUpRouter);
 app.use("/", folderRouter);
+app.use("/", fileRouter);
 
-app.post(
-  "/submit-file",
-  fildHandlerMiddleware.single("uploaded_file"),
-  multerErrorHandler,
-  uploadFile,
-  addFile,
-  (req, res) => {
-    const { folderId } = req.body;
-    if (folderId) {
-      res.redirect(`/folder/${folderId}`);
-    } else {
-      res.redirect("/");
-    }
-  }
-);
+// app.post(
+//   "/file",
+//   fildHandlerMiddleware.single("uploaded_file"),
+//   multerErrorHandler,
+//   uploadFile,
+//   addFile,
+//   (req, res) => {
+//     res.status(200).json({ success: "file uploaded" });
+//   }
+// );
 
 app.use((err, req, res, next) => {
   if (err instanceof AppError) {

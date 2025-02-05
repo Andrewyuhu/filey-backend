@@ -99,6 +99,20 @@ async function deleteFolderDB(folderId, userId) {
   };
 }
 
+async function createFile(url, fileName, fileSize, fileType, folderId, userId) {
+  const newFile = await prisma.file.create({
+    data: {
+      url: url,
+      fileName: fileName,
+      fileSize: fileSize,
+      fileType: fileType,
+      folderId: folderId,
+      ownerId: userId,
+    },
+  });
+  return newFile;
+}
+
 module.exports = {
   createUser,
   findUserById,
@@ -106,4 +120,5 @@ module.exports = {
   getFolderContent,
   createFolder,
   deleteFolderDB,
+  createFile,
 };

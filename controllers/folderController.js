@@ -46,6 +46,7 @@ const getSubFolders = asyncHandler(async (req, res) => {
   return res.status(200).json(folderContent);
 });
 
+// completed
 const deleteFolder = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
 
@@ -76,7 +77,7 @@ async function uploadFile(req, res, next) {
     .upload(`${req.user.id}/${fileName}`, file);
 
   if (error) {
-    throw new Error(error);
+    throw new AppError(error.message, 500);
   }
   req.body.uploadData = data;
   next();
