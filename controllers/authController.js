@@ -35,7 +35,6 @@ const signIn = asyncHandler(async (req, res) => {
     { expiresIn: "1h" },
     function (err, token) {
       if (err) {
-        console.log(err);
         throw new AppError("Unable to generate JWT", 500);
       }
       res.cookie("jwt", token, {
@@ -52,4 +51,20 @@ async function signOut(req, res) {
   res.status(200).send();
 }
 
-module.exports = { getSignIn, signIn, signOut };
+const authenticateUser = asyncHandler(async (req, res) => {
+  const token = req.cookies.jwt;
+
+  if (!token) {
+    throw new AppError("No jwt token found", 401);
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, function (err, decoded) {
+    if (err) {
+      throw new AppError("Forbidden: Invalid token", 403);
+    }
+    const decodedUser = { username: decoded.username, id: decoded.userId };
+    res.status(200).json(decodedUser);
+  });
+});
+
+module.exports = { getSignIn, signIn, signOut, authenticateUser };
