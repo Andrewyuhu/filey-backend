@@ -5,7 +5,7 @@ const AppError = require("../error/AppError");
 const { findUserByUsername } = require("../db/db");
 require("dotenv").config();
 
-// todo : to be removed
+// todo : to be
 function getSignIn(req, res) {
   res.render("signIn");
 }
@@ -35,10 +35,12 @@ const signIn = asyncHandler(async (req, res) => {
     { expiresIn: "1h" },
     function (err, token) {
       if (err) {
+        console.log(err);
         throw new AppError("Unable to generate JWT", 500);
       }
       res.cookie("jwt", token, {
         httpOnly: true,
+        sameSite: "None",
       });
       return res.status(200).json({ username: user.username, userId: user.id });
     }
