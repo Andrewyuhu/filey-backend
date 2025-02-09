@@ -163,6 +163,50 @@ async function deleteFile(req, res) {
   res.redirect("/");
 }
 
+const getParentChain = asyncHandler(async (req, res) => {
+  const { folderId } = req.params;
+
+  if (!Number.isInteger(Number(folderId)) || folderId < 0) {
+    throw new AppError("Invalid input", 400);
+  }
+  const parentChain = [];
+
+  let currentFolder = await prisma.folder.findUnique({
+    where: {
+      id: Number(folderId),
+      ownerId: req.user.id,
+    },
+    select: {
+      id: true,
+      folderName: true,
+      folderId: true,
+    },
+  });
+
+  if (!currentFolder) {
+    throw new AppError("Folder not found", 400);
+  }
+
+  while (currentFolder?.folderId) {
+    currentFolder = await prisma.folder.findUnique({
+      where: {
+        id: Number(currentFolder.folderId),
+        ownerId: req.user.id,
+      },
+      select: {
+        id: true,
+        folderName: true,
+        folderId: true,
+      },
+    });
+    if (!currentFolder) {
+      throw new AppError("Folder not found", 400);
+    }
+    parentChain.unshift(currentFolder);
+  }
+  return res.status(200).json({ parentChain: parentChain });
+});
+
 module.exports = {
   addFolder,
   getRootFolders,
@@ -173,4 +217,5 @@ module.exports = {
   addFile,
   downloadFile,
   deleteFile,
+  getParentChain,
 };

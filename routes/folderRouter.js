@@ -11,6 +11,9 @@ folderRouter.get("/folder", folderController.getRootFolder);
 folderRouter.get("/folder/:folderId", folderController.getSubFolder);
 folderRouter.post("/folder", folderController.addFolder); // create a folder
 folderRouter.delete("/folder/:folderId", folderController.deleteFolder); // delete a folder
+folderRouter.get("/folder/:folderId/parent", folderController.getParentChain);
+
+// todo: fix into proper REST
 folderRouter.delete("/delete-file/:fileId", folderController.deleteFile);
 folderRouter.patch("/update-folder/:folderId"); // Update file name
 

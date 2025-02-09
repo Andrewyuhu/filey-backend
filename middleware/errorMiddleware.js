@@ -1,6 +1,7 @@
 // Multer error-handling middleware
 const multer = require("multer");
 
+// todo : this needs a complete redo
 const multerErrorHandler = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     console.log(err.code);
@@ -14,8 +15,6 @@ const multerErrorHandler = (err, req, res, next) => {
       case "FILE_EXT":
         res.locals.fileUploadErrorMessage = "File extension not allowed";
     }
-    // Todo : Render the correct page that the user is on (could be on subfolder instead of home)
-    return res.render("index");
   }
   next(err); // Pass non-Multer errors to the global error handler
 };
