@@ -9,12 +9,12 @@ const supabaseClient = require("../config/supabaseClient");
 const addFileDB = asyncHandler(async (req, res, next) => {
   // todo : probably need to implmement proper error handling here, maybe default folderId to ROOT if needed
   const folderId = req.body.folderId ? Number(req.body.folderId) : undefined;
-  console.log("2");
+
   const { url, fileName, fileSize, fileType } = extractFileInformation(
     req.file,
     req.body.uploadData
   );
-  console.log("3");
+
   const newFile = await createFile(
     url,
     fileName,
@@ -23,7 +23,7 @@ const addFileDB = asyncHandler(async (req, res, next) => {
     folderId,
     req.user.id
   );
-  console.log("4");
+
   req.newFile = newFile;
 
   res.status(200).json(newFile);
@@ -40,8 +40,6 @@ const uploadFileSB = asyncHandler(async (req, res, next) => {
   if (error) {
     throw new AppError(error.message, 500);
   }
-
-  console.log("1");
 
   req.body.uploadData = data;
 

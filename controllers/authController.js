@@ -39,7 +39,8 @@ const signIn = asyncHandler(async (req, res) => {
       }
       res.cookie("jwt", token, {
         httpOnly: true,
-        sameSite: "None",
+        // sameSite: "None", // reconsider this during deployment!
+        expires: new Date(Date.now() + 3600000),
       });
       return res.status(200).json({ username: user.username, userId: user.id });
     }
@@ -63,6 +64,7 @@ const authenticateUser = asyncHandler(async (req, res) => {
       throw new AppError("Forbidden: Invalid token", 403);
     }
     const decodedUser = { username: decoded.username, id: decoded.userId };
+
     res.status(200).json(decodedUser);
   });
 });

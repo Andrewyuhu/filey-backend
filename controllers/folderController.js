@@ -5,7 +5,12 @@ const extractFileInformation = require("../util/extractFileInformation");
 const { v4: uuidv4 } = require("uuid");
 const prisma = new PrismaClient();
 const asyncHandler = require("express-async-handler");
-const { getFolderContent, createFolder, deleteFolderDB } = require("../db/db");
+const {
+  getRootFolderContent,
+  getSubFolderContent,
+  createFolder,
+  deleteFolderDB,
+} = require("../db/db");
 const AppError = require("../error/AppError");
 
 const addFolder = asyncHandler(async (req, res) => {
@@ -33,16 +38,23 @@ async function getRootFolders(req, res) {
 }
 
 // completed
-const getSubFolders = asyncHandler(async (req, res) => {
+const getSubFolder = asyncHandler(async (req, res) => {
   const { folderId } = req.params;
 
-  if (isNaN(folderId) || !folderId || folderId < 0) {
+  // this needs to be changed
+  if (!Number.isInteger(Number(folderId)) || folderId < 0) {
     throw new AppError("Invalid folder ID", 400);
   }
 
   const parentFolderId = Number(folderId);
-  const folderContent = await getFolderContent(parentFolderId, req.user.id);
+  const folderContent = await getSubFolderContent(parentFolderId, req.user.id);
+  return res.status(200).json(folderContent);
+});
 
+// completed
+const getRootFolder = asyncHandler(async (req, res) => {
+  console.log("running root folder route");
+  const folderContent = await getRootFolderContent(req.user.id);
   return res.status(200).json(folderContent);
 });
 
@@ -154,7 +166,8 @@ async function deleteFile(req, res) {
 module.exports = {
   addFolder,
   getRootFolders,
-  getSubFolders,
+  getRootFolder,
+  getSubFolder,
   deleteFolder,
   uploadFile,
   addFile,

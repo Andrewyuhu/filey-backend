@@ -7,7 +7,8 @@ const folderRouter = Router();
 folderRouter.use(isUserAuthenticated);
 
 folderRouter.get("/", folderController.getRootFolders); // todo : remove this and combine with folders/:folderId
-folderRouter.get("/folder/:folderId", folderController.getSubFolders);
+folderRouter.get("/folder", folderController.getRootFolder);
+folderRouter.get("/folder/:folderId", folderController.getSubFolder);
 folderRouter.post("/folder", folderController.addFolder); // create a folder
 folderRouter.delete("/folder/:folderId", folderController.deleteFolder); // delete a folder
 folderRouter.delete("/delete-file/:fileId", folderController.deleteFile);

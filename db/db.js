@@ -38,10 +38,11 @@ async function findUserByUsername(username) {
   return user;
 }
 
-async function getFolderContent(folderId, userId) {
+async function getSubFolderContent(folderId, userId) {
   const folder = await prisma.folder.findFirst({
     where: {
-      id: folderId,
+      id: Number(folderId),
+      ownerId: userId,
     },
     include: {
       childrenFolder: true,
@@ -51,9 +52,6 @@ async function getFolderContent(folderId, userId) {
   if (!folder) {
     throw new AppError("Folder not found", 404);
   }
-
-  console.log(folder.ownerId);
-  console.log(userId);
 
   if (folder.ownerId != userId) {
     throw new AppError("Forbidden", 403);
@@ -66,7 +64,38 @@ async function getFolderContent(folderId, userId) {
     },
   });
 
-  return { files: files, folders: folder.childrenFolder };
+  return {
+    files: files,
+    folders: folder.childrenFolder,
+    currentFolder: { name: folder.folderName, id: folder.id },
+  };
+}
+
+async function getRootFolderContent(userId) {
+  console.log("Finding root");
+  const folder = await prisma.folder.findMany({
+    where: {
+      folderId: null,
+      ownerId: userId,
+    },
+  });
+
+  if (!folder) {
+    throw new AppError("Folder not found", 404);
+  }
+
+  const files = await prisma.file.findMany({
+    where: {
+      folderId: null,
+      ownerId: userId,
+    },
+  });
+
+  return {
+    files: files,
+    folders: folder,
+    currentFolder: { name: "root", id: null },
+  };
 }
 
 async function createFolder(folderName, userId, parentId = undefined) {
@@ -81,7 +110,6 @@ async function createFolder(folderName, userId, parentId = undefined) {
 }
 
 async function deleteFolderDB(folderId, userId) {
-  console.log("3");
   const deletedFolder = await prisma.folder.delete({
     where: {
       id: Number(folderId),
@@ -117,7 +145,8 @@ module.exports = {
   createUser,
   findUserById,
   findUserByUsername,
-  getFolderContent,
+  getSubFolderContent,
+  getRootFolderContent,
   createFolder,
   deleteFolderDB,
   createFile,
