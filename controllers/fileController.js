@@ -7,7 +7,6 @@ const extractFileInformation = require("../util/extractFileInformation");
 const supabaseClient = require("../config/supabaseClient");
 
 const addFileDB = asyncHandler(async (req, res, next) => {
-  // todo : probably need to implmement proper error handling here, maybe default folderId to ROOT if needed
   const folderId = req.body.folderId ? Number(req.body.folderId) : undefined;
 
   const { url, fileName, fileSize, fileType } = extractFileInformation(
@@ -46,6 +45,19 @@ const uploadFileSB = asyncHandler(async (req, res, next) => {
   next();
 });
 
-// This function will interact with the supabase client and upload the user file
+const getFileDownload = asyncHandler(async (req, res) => {
+  const userID = req.user.id;
+  const fileName = req.params.fileName;
 
-module.exports = { addFileDB, uploadFileSB };
+  const { data, error } = await supabaseClient.storage
+    .from("fileuploader")
+    .createSignedUrl(`${userID}/${fileName}`, 120, { download: true });
+
+  if (error) {
+    throw new AppError(error.message, error.status);
+  }
+
+  return res.json({ url: data.signedUrl });
+});
+
+module.exports = { addFileDB, uploadFileSB, getFileDownload };

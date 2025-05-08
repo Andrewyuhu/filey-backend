@@ -21,6 +21,9 @@
     "uuid": "^11.0.5"
   },
   "devDependencies": {
-    "prisma": "^6.2.1"
+    "prisma": "^6.7.0"
+  },
+  "scripts": {
+    "watch": "node --watch app.js"
   }
 }

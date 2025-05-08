@@ -72,7 +72,6 @@ async function getSubFolderContent(folderId, userId) {
 }
 
 async function getRootFolderContent(userId) {
-  console.log("Finding root");
   const folder = await prisma.folder.findMany({
     where: {
       folderId: null,

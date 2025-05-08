@@ -12,6 +12,8 @@ fileRouter.post(
   fileController.addFileDB
 );
 
+fileRouter.get("/file/:fileName", fileController.getFileDownload);
+
 fileRouter.delete("/file");
 
 module.exports = fileRouter;
